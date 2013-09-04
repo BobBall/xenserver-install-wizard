@@ -2,8 +2,6 @@
 
 import sys, subprocess
 
-import tui
-
 IPTABLES="/etc/sysconfig/iptables"
 
 def accept_port_of(line):
@@ -28,7 +26,7 @@ def is_forwarding_blocked(lines):
 			return True
 	return False
 
-def analyse(filename = IPTABLES):
+def analyse(tui, filename = IPTABLES):
 	f = open(filename, "r")
 	lines = f.readlines()
 	f.close()
@@ -42,12 +40,12 @@ def analyse(filename = IPTABLES):
 		if p in ports:
 			print >>sys.stderr, "OK: there appears to be a firewall hole for port %d" % p
 		else:
-			if tui.yesno("Would you like me to add a firewall hole for port %d?" % p):
+			if tui.yesno("Would you like me to add a firewall hole for port %d?" % p, True):
 				ports_to_add.append(p)
 			else:
 				print >>sys.stderr, "WARNING: the firewall might be blocking port %d" % p
 	if forwarding_blocked:
-		if tui.yesno("Would you like your firewall to allow packet forwarding?"):
+		if tui.yesno("Would you like your firewall to allow packet forwarding?", True):
 			pass
 		else:
 			forwarding_blocked = False
@@ -75,10 +73,11 @@ def restart():
 		exit(1)
 
 if __name__ == "__main__":
+	from tui import Tui
 	filename = IPTABLES
 	if len(sys.argv) == 2:
 		filename = sys.argv[1]
-	result = analyse(filename = filename)
+	result = analyse(Tui(False), filename = filename)
 	if result:
 		print "I propose the file %s is changed to read:" % result[0]
 		for line in result[1]:

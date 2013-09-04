@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys, subprocess
-import xapi, tui
+import xapi
 
 def sysconfig_file(device):
 	return "/etc/sysconfig/network-scripts/ifcfg-%s" % device
@@ -25,7 +25,7 @@ def save_sysconfig(x):
 		lines.append("%s=\"%s\"" % (k, x[k]))
 	return lines
 
-def analyse():
+def analyse(tui):
 	x = xapi.open()	
 	x.login_with_password("root", "")
 	try:
@@ -38,7 +38,7 @@ def analyse():
 			if pifs[pif]["management"]:
 				print >>sys.stderr, "OK: found a configured management interface"
 				return
-		if not(tui.yesno("Would you like me to set up host networking for XenServer?")):
+		if not(tui.yesno("Would you like me to set up host networking for XenServer?", True)):
 			print >>sys.stderr, "WARNING: host networking is not set up"
 			return
 		print "PIF scan %s" % hosts[0]
@@ -94,7 +94,8 @@ def restart():
 		 print >>sys.stderr, "FAILED: to restart networking"
 
 if __name__ == "__main__":
-	file_changes = analyse()
+	from tui import Tui
+	file_changes = analyse(Tui(False))
 	if file_changes:
 		for change in file_changes:
 			print "I propose changing %s to:" % change[0]
