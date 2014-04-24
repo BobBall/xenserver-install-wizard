@@ -31,11 +31,11 @@ def analyse(tui):
 		if len(hosts) <> 1:
 			print >>sys.stderr, "ERROR: host is already in a pool"
 			return
-		path = "/var/lib/xapi/sr-mount/%s" % uuid
+		path = "/var/run/sr-mount/%s" % uuid
 		mkdir(path)
-		sr = x.xenapi.SR.introduce(uuid, path, "Files stored in %s" % path, "ffs", "default", False, {})
+		sr = x.xenapi.SR.introduce(uuid, path, "Files stored in %s" % path, "file", "default", False, {})
 		x.xenapi.SR.add_to_other_config(sr, "created_by_install_wizard_for_openstack", "")
-		pbd = x.xenapi.PBD.create({ "host": hosts[0], "SR": sr, "device_config": {"path": path}})
+		pbd = x.xenapi.PBD.create({ "host": hosts[0], "SR": sr, "device_config": {"path": path, "location": path}})
 		x.xenapi.PBD.plug(pbd)
 		pool = x.xenapi.pool.get_all()[0]
 		pool_r = x.xenapi.pool.get_record(pool)
